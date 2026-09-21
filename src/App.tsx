@@ -256,7 +256,7 @@ export default function App() {
     <a className="skip-link" href="#work-index">Skip to work index</a>
     <div className="atmosphere" aria-hidden="true"><div className="light-field" /><div className="grain" /></div>
     <header className="site-header">
-      <a className="monogram" href="/" aria-label="Srivathsa H. Honyal — home" onClick={(e) => { e.preventDefault(); setSelected(null); window.history.pushState(null, '', window.location.pathname); window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' }); }}>sh<span>.</span></a>
+      <a className="monogram" href="/" aria-label="Srivathsa H. Honyal, home" onClick={(e) => { e.preventDefault(); setSelected(null); window.history.pushState(null, '', window.location.pathname); window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' }); }}>sh<span>.</span></a>
       <nav aria-label="Primary navigation">
         {(['work', 'research', 'systems', 'fieldwork'] as View[]).map(view => <a key={view} href={`#${view}`} onClick={e => { e.preventDefault(); navigate(view); }} aria-current={!contactVisible && (view === 'work' ? chapter === 'identity' : chapter === view) ? 'location' : undefined}>{view}</a>)}
         <a href="#contact" onClick={e => { e.preventDefault(); navigate('contact'); }} aria-current={contactVisible ? 'location' : undefined}>Contact <Arrow diagonal /></a>
@@ -270,7 +270,7 @@ export default function App() {
           <h1 id="name"><span>SRIVATHSA</span><span className="name-second">H. HONYAL<span className="name-star" aria-hidden="true">✳</span></span></h1>
           <div className="hero-subline"><p>Security assumptions in<br />machine-learning systems.</p><span>RESEARCH / SYSTEMS / FIELDWORK</span></div>
         </div>
-        <div className="hero-bottom"><span>BASED IN DUBAI, UAE</span><a href="#work" onClick={e => { e.preventDefault(); navigate('work'); }}>Scroll to explore <span className="scroll-line" aria-hidden="true">↓</span></a><span>PORTFOLIO — 2026</span></div>
+        <div className="hero-bottom"><span>BASED IN DUBAI, UAE</span><a href="#work" onClick={e => { e.preventDefault(); navigate('work'); }}>Scroll to explore <span className="scroll-line" aria-hidden="true">↓</span></a><span>PORTFOLIO / 2026</span></div>
       </section>
       <section ref={journey} className="journey" aria-label="Connected portfolio">
         {chapters.map((c, i) => <div key={c.id} id={c.id === 'identity' ? 'work' : c.id} className="chapter-anchor" style={{ top: `${i * 100 / 5}%` }} />)}
@@ -296,7 +296,7 @@ export default function App() {
       </section>
       <section id="work-index" className="work-index" aria-labelledby="index-heading">
         <div className="index-heading reveal"><span className="eyebrow">A DIRECT WAY IN</span><h2 id="index-heading">Explore the work.</h2></div>
-        <div className="index-list">{investigations.map(item => <button key={item.id} onClick={() => selectPearl(item.id)}><span className="index-number">{item.number}</span><span>{item.name}<small>{item.system}</small></span><span className="index-proof">{pearlPresentation[item.id].proof}</span><Arrow diagonal /></button>)}</div>
+        <div className="index-list">{investigations.map(item => <button key={item.id} className={item.weight ? `is-${item.weight}` : undefined} onClick={() => selectPearl(item.id)}><span className="index-number">{item.number}</span><span>{item.name}<small>{item.system}</small></span><span className="index-proof">{pearlPresentation[item.id].proof}</span><Arrow diagonal /></button>)}</div>
       </section>
       <section id="contact" className="contact" aria-labelledby="contact-title">
         <span className="eyebrow reveal"><i /> THE NEXT CONNECTION</span>

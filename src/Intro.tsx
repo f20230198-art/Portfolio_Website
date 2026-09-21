@@ -5,7 +5,7 @@ const HOLD = 1800;   // minimum on-screen time, so the sequence is always seen
 const FADE = 800;    // must match the CSS transition on .loader-intro
 
 /**
- * Full-screen opening sequence. Shows on first visit only — sessionStorage
+ * Full-screen opening sequence. Shows on first visit only (sessionStorage)
  * keeps it from replaying on every internal navigation or refresh.
  */
 export default function Intro({ reduced }: { reduced: boolean }) {

@@ -13,24 +13,30 @@ export type Investigation = {
   labelY: number;
   anchor?: 'start' | 'end';
   system: string;
-  question: string;
+  question?: string;
   method: string;
   finding: string;
   evidence: string;
   evidenceUrl?: string;
   evidenceLinkLabel?: string;
   marker?: string;
+  /**
+   * List-view prominence, mirroring the pearl radius used in the 3D scene.
+   * 'lead' items carry the strongest claims and get the most room; 'supporting'
+   * items stay deliberately quieter so the lead work is not read as their peer.
+   */
+  weight?: 'lead' | 'supporting';
 };
 
 export const investigations: Investigation[] = [
   {
-    id: 'ai-security-research', name: 'AI security research', shortName: 'AI security', number: '01', category: 'RESEARCH', year: '2026—27',
+    id: 'ai-security-research', name: 'AI security research', shortName: 'AI security', number: '01', category: 'RESEARCH', year: '2026–27',
     x: 281, y: 254, labelX: 297, labelY: 243,
     system: 'Adversarial ML investigations',
     question: 'Which security guarantees survive an adaptive attacker?',
-    method: 'Reproduction · threat-model review · adaptive evaluation',
+    method: 'Reproduce the defense, review its threat model, then attack it adaptively.',
     finding: 'Current work probes assumptions behind machine-learning defenses.',
-    evidence: 'First-author AAAI 2027 submission · under review',
+    evidence: 'First-author AAAI 2027 submission, under review',
     marker: 'Research programme',
   },
   {
@@ -38,31 +44,31 @@ export const investigations: Investigation[] = [
     x: 550, y: 190, labelX: 566, labelY: 178,
     system: 'LoRA backdoor detector audit',
     question: 'Can weight-space signals reliably expose a backdoor?',
-    method: 'Detector reproduction · dataset asymmetry and probe audit · adaptive attacks',
+    method: 'Reproduced the detector, audited its dataset asymmetry and probes, then built adaptive attacks.',
     finding: 'Adaptive attacks defeat detection while keeping the backdoor functional.',
-    evidence: 'First-author AAAI 2027 submission · under review',
-    marker: 'Assumption under test',
+    evidence: 'First-author AAAI 2027 submission, under review',
+    marker: 'Assumption under test', weight: 'lead',
   },
   {
     id: 'sentinelx', name: 'SentinelX', shortName: 'SentinelX', number: '03', category: 'SYSTEM', year: '2026',
     x: 221, y: 470, labelX: 236, labelY: 458,
     system: 'Threat-intelligence platform',
     question: 'How can fragmented threat signals become inspectable?',
-    method: 'Tor collection from a synthetic .onion forum · IOC extraction · Mistral pipeline · ATT&CK mapping',
+    method: 'Collects over Tor from a synthetic .onion forum, extracts IOCs through a Mistral pipeline, maps to ATT&CK.',
     finding: 'Live investigation across an SSE timeline, ATT&CK heatmap, and IOC pivot graphs.',
     evidence: '236+ enriched posts · 14-tactic heatmap · live SSE timeline',
     evidenceUrl: 'https://github.com/f20230198-art/SentinalX',
     evidenceLinkLabel: 'Inspect source repository',
-    marker: 'Threat analysis',
+    marker: 'Threat analysis', weight: 'lead',
   },
   {
     id: 'propnet', name: 'PropNet', shortName: 'PropNet', number: '04', category: 'SYSTEM', year: '2026',
     x: 367, y: 83, labelX: 381, labelY: 70,
     system: 'Graph-based misinformation detector',
     question: 'Does propagation structure improve classification?',
-    method: 'DistilBERT embeddings · graph attention · seven structural motifs',
+    method: 'DistilBERT embeddings feeding graph attention over seven structural motifs.',
     finding: 'ROC-AUC 0.989 ± 0.004 across five pooled-test seeds.',
-    evidence: 'Text-only BERT 0.973 · motif-only random forest 0.795',
+    evidence: 'Against text-only BERT at 0.973 and motif-only random forest at 0.795',
     marker: 'Measured performance',
   },
   {
@@ -70,9 +76,9 @@ export const investigations: Investigation[] = [
     x: 703, y: 87, labelX: 718, labelY: 74,
     system: 'Multi-agent LLM trading system',
     question: 'Can specialized agents make accountable decisions?',
-    method: 'Nine-agent orchestration · regime detection · vector memory · risk gate',
+    method: 'Nine orchestrated agents with regime detection, vector memory and a risk gate.',
     finding: 'Decisions and agent-level P&L are traceable through paper trades.',
-    evidence: '60-second async cycle · live Alpaca paper-trade pipeline',
+    evidence: '60-second async cycle on a live Alpaca paper-trade pipeline',
     evidenceUrl: 'https://github.com/f20230198-art/AI_Trading_engine',
     evidenceLinkLabel: 'Inspect source repository',
     marker: 'Decision pipeline',
@@ -81,33 +87,31 @@ export const investigations: Investigation[] = [
     id: 'cyberscan', name: 'CyberScan', shortName: 'CyberScan', number: '06', category: 'SYSTEM', year: '2025',
     x: 507, y: 510, labelX: 522, labelY: 498,
     system: 'Web vulnerability scanner',
-    question: 'Which site weaknesses can be surfaced systematically?',
-    method: 'Form crawling · SQLi and XSS payloads · TLS and header checks',
-    finding: 'Weighted issue scoring with reproducible findings.',
-    evidence: '20+ SQLi payloads · 15+ XSS payloads · 0–100 score',
+    method: 'Crawls forms, fires SQLi and XSS payloads, checks TLS and security headers.',
+    finding: 'Scores each issue by weight so repeat runs stay comparable.',
+    evidence: '20+ SQLi and 15+ XSS payloads, 0–100 score',
     evidenceUrl: 'https://github.com/f20230198-art/CyberScan',
     evidenceLinkLabel: 'Inspect source repository',
-    marker: 'Application testing',
+    marker: 'Application testing', weight: 'supporting',
   },
   {
-    id: 'offensive-security', name: 'Offensive security', shortName: 'Offensive security', number: '07', category: 'FIELDWORK', year: '2025—26',
+    id: 'offensive-security', name: 'Offensive security', shortName: 'Offensive security', number: '07', category: 'FIELDWORK', year: '2025–26',
     x: 688, y: 359, labelX: 704, labelY: 347,
     system: 'Security testing and CTF work',
-    question: 'Where do application trust boundaries fail?',
-    method: 'Web testing · exploitation · challenge solving',
+    method: 'Web exploitation and challenge solving under competition conditions.',
     finding: 'First place in a 48-hour CTF among 30+ teams.',
-    evidence: '19 of 20 challenges solved · ACM BPDC CTF 2025',
-    marker: 'Field result',
+    evidence: '19 of 20 challenges solved, ACM BPDC CTF 2025',
+    marker: 'Field result', weight: 'supporting',
   },
   {
-    id: 'gdg-leadership', name: 'GDG leadership', shortName: 'GDG leadership', number: '08', category: 'FIELDWORK', year: '2025—',
+    id: 'gdg-leadership', name: 'GDG leadership', shortName: 'GDG leadership', number: '08', category: 'FIELDWORK', year: '2025–',
     x: 743, y: 571, labelX: 728, labelY: 558, anchor: 'end',
     system: 'Campus technical leadership',
     question: 'How can security practice be taught and applied?',
-    method: 'Hackathons · CTFs · workshops · leaderboard audit and server-side fix',
-    finding: 'Found and fixed an unguarded score-submission path.',
-    evidence: 'GDG on Campus Tech Lead · hackathons, CTFs and workshops',
-    marker: 'Community practice',
+    method: 'Running hackathons, CTFs and workshops for the campus chapter.',
+    finding: 'Audited our own event leaderboard and closed an unguarded score-submission path.',
+    evidence: 'GDG on Campus Tech Lead, 2025 to present',
+    marker: 'Community practice', weight: 'supporting',
   },
 ];
 
@@ -158,7 +162,7 @@ export const pearlPresentation: Record<string, PearlPresentation> = {
   'doom-engine': { position: [2.7, -1.6, -.75], radius: .52, proof: '9 agents', proofLabel: 'ONE ACCOUNTABLE DECISION PIPELINE', summary: 'An LLM trading system with traceable decisions, risk gates, and paper trades.', chapter: 'systems' },
   cyberscan: { position: [.65, -2.2, .3], radius: .47, proof: '0–100', proofLabel: 'WEIGHTED ISSUE SCORE', summary: 'Systematic web testing, from forms and payloads to TLS and security headers.', chapter: 'systems' },
   'offensive-security': { position: [-1.75, -1.55, .4], radius: .62, proof: '1st', proofLabel: '48-HOUR CTF · 30+ TEAMS', summary: '19 of 20 challenges solved. Application trust boundaries tested in practice.', chapter: 'fieldwork' },
-  'gdg-leadership': { position: [-3.55, -1.0, -.7], radius: .47, proof: 'Tech Lead', proofLabel: 'GDG ON CAMPUS · HACKATHONS, CTFS & WORKSHOPS', summary: 'GDG on Campus Tech Lead. Running hackathons, CTFs and workshops — teaching security, building challenges, and fixing real flaws.', chapter: 'fieldwork' },
+  'gdg-leadership': { position: [-3.55, -1.0, -.7], radius: .47, proof: 'Tech Lead', proofLabel: 'GDG ON CAMPUS · HACKATHONS, CTFS & WORKSHOPS', summary: 'GDG on Campus Tech Lead. Running hackathons, CTFs and workshops. Teaching security, building challenges, fixing real flaws.', chapter: 'fieldwork' },
 };
 
 export const chapters: { id: Chapter; number: string; title: string; subtitle: string; members: string[] }[] = [
