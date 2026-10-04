@@ -79,7 +79,7 @@ const ALL_SCENES: SceneDef[] = [
     ],
     particles: [
       { kind: 'birds', y0: 150, y1: 520, n: 5 }, { kind: 'petals', rect: [380, 300, 940, 1100], n: 14 },
-      { kind: 'mist', x: 580, y: 1410, n: 26 }, { kind: 'motes', rect: [0, 400, 940, 1500], n: 18, color: '#ffd9ef' },
+      { kind: 'mist', x: 580, y: 1410, n: 26 }, { kind: 'motes', rect: [0, 400, 940, 1500], n: 18, color: '#d9e4ff' },
     ],
   },
   {
@@ -399,7 +399,7 @@ function drawParticles(s: Scene, oy: number, t: number) {
         const ph = (t * 0.06 + R(i, 1)) % 1;
         const x = x1 - ph * (x1 - x0) * 1.3 + Math.sin(t * 2 + i) * 3;
         const y = oy + y0 + R(i, 2) * (y1 - y0) + ph * 40;
-        dot(x, y, i % 3 ? '#f4a3c8' : '#ffe2f0', 0.9, Math.floor(t * 4 + i) % 2 ? 2 : 1, 1);
+        dot(x, y, i % 3 ? '#a9c4ff' : '#e2ecff', 0.9, Math.floor(t * 4 + i) % 2 ? 2 : 1, 1);
       }
     } else if (pt.kind === 'embers') {
       for (let i = 0; i < 16; i++) {
