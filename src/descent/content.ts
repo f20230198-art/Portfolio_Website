@@ -18,6 +18,8 @@ export type Project = {
   title: string;
   year: string;
   kind: string;
+  /** The headline result, shown on the project's row on the home page. */
+  result: string;
   /** Short stack line shown under the title. */
   stack: string;
   summary: string;
@@ -100,6 +102,7 @@ export const projects: Project[] = [
   // ── AI Security ──
   {
     id: 'lora-backdoor',
+    result: 'Detector collapses, backdoor still fires',
     zone: 'aisec',
     title: 'Weights Aren’t Enough',
     year: '2026',
@@ -119,6 +122,7 @@ export const projects: Project[] = [
   },
   {
     id: 'ownership-spoof',
+    result: 'Innocent models falsely accused',
     zone: 'aisec',
     title: 'Spoofing Dataset Ownership',
     year: '2027',
@@ -137,6 +141,7 @@ export const projects: Project[] = [
   },
   {
     id: 'ml-dsa',
+    result: 'One leakage lens on 4 NIST proposals',
     zone: 'aisec',
     title: 'Threshold ML-DSA Cryptanalysis',
     year: '2026',
@@ -157,6 +162,7 @@ export const projects: Project[] = [
   // ── Machine Learning ──
   {
     id: 'exam-drift',
+    result: 'F1 0.774 · ROC-AUC 0.959',
     zone: 'ml',
     title: 'Behavioral Drift Detection',
     year: '2026',
@@ -177,6 +183,7 @@ export const projects: Project[] = [
   },
   {
     id: 'propnet',
+    result: 'ROC-AUC 0.989, beats text-only BERT',
     zone: 'ml',
     title: 'PropNet',
     year: '2026',
@@ -196,6 +203,7 @@ export const projects: Project[] = [
   },
   {
     id: 'doom-engine',
+    result: '9 agents trading live on paper',
     zone: 'ml',
     title: 'DOOM Engine',
     year: '2026',
@@ -218,6 +226,7 @@ export const projects: Project[] = [
   // ── Cybersecurity ──
   {
     id: 'sentinelx',
+    result: 'Posts mapped to 697 ATT&CK techniques',
     zone: 'cyber',
     title: 'SentinelX',
     year: '2026',
@@ -238,6 +247,7 @@ export const projects: Project[] = [
   },
   {
     id: 'cyberscan',
+    result: 'A scored 0–100 report in one command',
     zone: 'cyber',
     title: 'CyberScan',
     year: '2025',

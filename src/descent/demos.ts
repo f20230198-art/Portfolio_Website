@@ -4,6 +4,7 @@
  * the painted world. They illustrate the idea of the project; none of them is real data.
  */
 import { esc } from './text';
+import './demos.css';
 
 const C = { bg: '#140c28', panel: '#1e1438', line: '#3a2c5e', ink: '#fff8ec', dim: '#a99cc4', gold: '#ffd27a', green: '#7fe0a8', red: '#ff6b6b', blue: '#8ab8ff', pink: '#f4a3c8' };
 type G = CanvasRenderingContext2D;
@@ -475,3 +476,46 @@ export const DEMOS: Record<string, (host: HTMLElement) => void> = {
   'exam-drift': drift, propnet, 'doom-engine': doom,
   sentinelx: sentinel, cyberscan,
 };
+
+/** Mount the demos placed in the page with data-demo="<project id>". */
+export function mountDemos(root: HTMLElement) {
+  root.querySelectorAll<HTMLElement>('[data-demo]').forEach((el) => DEMOS[el.dataset.demo!]?.(el));
+}
+
+/**
+ * A live, hands-off preview of a project's demo beside its row while hovered.
+ * Each preview is built once and kept; hidden ones stop animating (their loop only runs on screen).
+ */
+export function peeks(root: HTMLElement) {
+  if (!matchMedia('(hover: hover) and (min-width: 1100px)').matches) return;
+  const made = new Map<string, HTMLElement>();
+  let shown: HTMLElement | null = null;
+  root.querySelectorAll<HTMLAnchorElement>('[data-peek]').forEach((a) => {
+    const id = a.dataset.peek!;
+    if (!DEMOS[id]) return;
+    a.addEventListener('pointerenter', () => {
+      let card = made.get(id);
+      if (!card) {
+        card = document.createElement('div');
+        card.className = 'peek';
+        card.setAttribute('aria-hidden', 'true');
+        document.body.append(card);
+        DEMOS[id](card);
+        made.set(id, card);
+      }
+      const r = a.getBoundingClientRect();
+      card.style.display = '';
+      card.style.left = `${r.right + 28}px`;
+      card.style.top = `${Math.max(70, Math.min(innerHeight - card.offsetHeight - 16, r.top + r.height / 2 - card.offsetHeight / 2))}px`;
+      requestAnimationFrame(() => card!.classList.add('show'));
+      shown = card;
+    });
+    a.addEventListener('pointerleave', () => {
+      const card = shown;
+      if (!card) return;
+      card.classList.remove('show');
+      setTimeout(() => { if (!card.classList.contains('show')) card.style.display = 'none'; }, 220);
+    });
+  });
+  addEventListener('scroll', () => shown?.classList.remove('show'), { passive: true });
+}

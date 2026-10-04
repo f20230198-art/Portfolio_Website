@@ -5,6 +5,8 @@
 import { projects, zones } from './content';
 import { esc } from './text';
 import { DEMOS } from './demos';
+import { createSlime } from './slime';
+import { createWisps } from './wisp';
 
 const page = document.getElementById('page')!;
 const p = projects.find((p) => p.id === new URLSearchParams(location.search).get('id'));
@@ -46,3 +48,17 @@ addEventListener('scroll', () => {
   far.style.transform = `translate3d(0, ${-k * 8}%, 0)`;
   near.style.transform = `translate3d(0, ${-k * 16}%, 0)`;
 }, { passive: true });
+
+// the slime (in its forest form) and the wisps live here too
+const slime = createSlime();
+const wisps = createWisps((x) => slime.annoy(x));
+const FOREST = 6;
+let last = performance.now(), lastY = scrollY;
+function tick(now: number) {
+  const t = now / 1000, dt = Math.min(0.05, (now - last) / 1000);
+  wisps.update(t, dt, slime.head());
+  slime.update({ t, dt, vel: scrollY - lastY, zone: FOREST, ambient: null });
+  last = now; lastY = scrollY;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);

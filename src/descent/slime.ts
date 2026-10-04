@@ -16,6 +16,8 @@ type Form = {
   /** extra pixels; top = the dome's top row, t = time, sx = horizontal stretch */
   extra?: (put: Put, top: number, t: number, sx: number) => void;
   visor?: boolean;
+  /** built as an aviator: a leather flying cap with goggles, and a scarf round the base */
+  aviator?: boolean;
 };
 
 const hex = (c: RGB, k = 1) => `rgb(${c.map((v) => Math.max(0, Math.min(255, Math.round(v * k)))).join(',')})`;
@@ -25,12 +27,12 @@ const mix = (a: RGB, b: RGB, k: number): RGB => [a[0] + (b[0] - a[0]) * k, a[1] 
 const EYE = '#1b2430'; // the same eyes in every form
 const FORMS: Form[] = [
   {
-    name: 'sprout', body: [120, 214, 110], shade: [62, 150, 84], light: [214, 255, 180], outline: [30, 70, 52], eye: EYE,
-    extra: (put, top, t) => {
-      const sway = Math.round(Math.sin(t * 2.2) * 0.8);
-      put(0, top - 1, '#3f8a3a'); put(sway, top - 2, '#3f8a3a');
-      put(sway - 1, top - 3, '#6fcf5a'); put(sway - 2, top - 3, '#6fcf5a'); put(sway - 2, top - 4, '#9be27c');
-      put(sway + 1, top - 3, '#6fcf5a'); put(sway + 2, top - 4, '#6fcf5a'); put(sway + 3, top - 4, '#9be27c');
+    name: 'aviator', body: [150, 205, 255], shade: [92, 146, 214], light: [222, 242, 255], outline: [28, 50, 96], eye: EYE, aviator: true,
+    extra: (put, top, t, sx) => {
+      // the scarf's tail, streaming out behind in the wind
+      const y = top + 13, x0 = Math.round(-9 * sx), f = Math.round(Math.sin(t * 6) * 1);
+      put(x0 - 1, y, '#e9e2d2'); put(x0 - 2, y + f * 0, '#f4efe4'); put(x0 - 3, y + 1 + f, '#e9e2d2'); put(x0 - 4, y + 1 + f, '#d8cfbd');
+      put(x0 - 2, y + 1, '#d8cfbd'); put(x0 - 5, y + 2 + f, '#d8cfbd');
     },
   },
   {
@@ -74,17 +76,13 @@ const FORMS: Form[] = [
   },
   {
     name: 'crystal', body: [98, 104, 222], shade: [56, 54, 156], light: [168, 214, 255], outline: [22, 20, 66], alpha: 0.9, eye: EYE,
-    extra: (put, top, t) => {
-      // crystal shards growing out of its back
-      const shards: [number, number, number][] = [[-5, 3, 0], [-1, 5, 1], [4, 4, 2]];
-      for (const [x, h, i] of shards) {
-        const glint = Math.max(0, Math.sin(t * 2 - i * 1.3));
-        for (let k = 0; k < h; k++) {
-          put(x, top + 1 - k, k === h - 1 ? '#ffffff' : '#a8d8ff');
-          if (k < h - 2) put(x + 1, top + 1 - k, '#6a7fe0');
-        }
-        put(x, top + 2 - h, '#ffffff', glint);
-      }
+    extra: (put, top, t, sx) => {
+      // a little crystal circling round it, dimmer while it passes behind
+      const a = t * 1.7, x = Math.round(Math.cos(a) * 13 * sx), y = top + 8 + Math.round(Math.sin(a) * 3 - Math.sin(t * 3) * 0.6);
+      const k = Math.sin(a) < 0 ? 0.55 : 1;
+      put(x, y - 2, '#ffffff', k); put(x - 1, y - 1, '#a8d8ff', k); put(x, y - 1, '#d8f0ff', k); put(x + 1, y - 1, '#6a7fe0', k);
+      put(x - 1, y, '#6a7fe0', k); put(x, y, '#a8d8ff', k); put(x + 1, y, '#4a56c0', k); put(x, y + 1, '#4a56c0', k);
+      if (Math.sin(t * 4) > 0.8) put(x - 2, y - 3, '#ffffff', 0.8 * k);
     },
   },
   {
@@ -99,6 +97,15 @@ const FORMS: Form[] = [
         const ph = (t * 0.7 + i / 3) % 1;
         put(Math.round(Math.sin(t * 3 + i * 2) * 3), top - 4 - Math.round(ph * 8), '#ffb347', 1 - ph);
       }
+    },
+  },
+  {
+    name: 'sprout', body: [120, 214, 110], shade: [62, 150, 84], light: [214, 255, 180], outline: [30, 70, 52], eye: EYE,
+    extra: (put, top, t) => {
+      const sway = Math.round(Math.sin(t * 2.2) * 0.8);
+      put(0, top - 1, '#3f8a3a'); put(sway, top - 2, '#3f8a3a');
+      put(sway - 1, top - 3, '#6fcf5a'); put(sway - 2, top - 3, '#6fcf5a'); put(sway - 2, top - 4, '#9be27c');
+      put(sway + 1, top - 3, '#6fcf5a'); put(sway + 2, top - 4, '#6fcf5a'); put(sway + 3, top - 4, '#9be27c');
     },
   },
 ];
@@ -142,8 +149,8 @@ export function createSlime() {
   let blinkAt = 2, blink = 0;
   let look = 0, lookY = 0;
   let alert = 0;
+  let angry = 0, chase = 0;            // how cross she is; a lunge at whoever booped her
   let pet = 0, happy = 0, clicks = 0, clickT = 0;
-  const seen = new Set<Element>();
   const sparks: { x: number; y: number; vx: number; vy: number; life: number; c: string; heart?: boolean }[] = [];
   let mouse: { x: number; y: number } | null = null;
   let goal: number | null = null;      // somewhere she's been asked to go (overrides the cursor)
@@ -213,7 +220,7 @@ export function createSlime() {
       const nx = Math.max(lo, Math.min(hi, carry + mouse.x - drag.x));
       xv = (nx - x) / Math.max(dt, 1e-3); x = nx;
     } else {
-      const want = goal ?? mouse?.x ?? null;
+      const want = goal;
       const target = want !== null ? Math.max(lo, Math.min(hi, want)) : x;
       const dx = target - x;
       const k = Math.abs(dx) < 3 * P ? 0 : 5;
@@ -262,8 +269,12 @@ export function createSlime() {
     if (f.ambient) tint = mix(tint, f.ambient, Math.min(1, dt * 3));
 
     pet = Math.max(0, pet - dt * 0.35);
-    happy += ((pet > 0.25 ? 1 : 0) - happy) * Math.min(1, dt * 6);
-    if (pet > 0.9 && Math.random() < dt * 4) burst(1, [255, 120, 160], true);
+    // she stays cross for a while; petting calms her down faster
+    angry = Math.max(0, angry - dt * (pet > 0.3 ? 0.9 : 0.25));
+    if (angry > 0.5 && Math.random() < dt * 5) sparks.push({ x: (Math.random() < 0.5 ? -1 : 1) * (6 + Math.random() * 3), y: -16, vx: (Math.random() - 0.5) * 6, vy: -18, life: 0.8, c: '#f4f4f8' });
+    if (chase !== 0 && !drag) { xv += chase; chase = 0; }
+    happy += ((pet > 0.25 && angry < 0.3 ? 1 : 0) - happy) * Math.min(1, dt * 6);
+    if (pet > 0.9 && Math.random() < dt * 4) burst(1, [255, 214, 110], true);
 
     blinkAt -= dt;
     if (blinkAt < 0) { blink = 0.13; blinkAt = 2.5 + Math.random() * 3.5; }
@@ -271,15 +282,7 @@ export function createSlime() {
 
     // eyes: on the cursor; a new heading on screen gets a quick look and a "!"
     const hy = base() - 8 * P;
-    let tx = mouse ? mouse.x : x - 100, ty = mouse ? mouse.y : hy;
-    document.querySelectorAll<HTMLElement>('.label').forEach((el) => {
-      const r = el.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > innerHeight) { seen.delete(el); return; }
-      if (Math.abs(r.top + r.height / 2 - innerHeight * 0.5) < innerHeight * 0.3 && !seen.has(el)) {
-        seen.add(el); alert = 1.4; if (hop === 0) hopV = 30;
-      }
-      if (alert > 0) { tx = r.left + r.width / 2; ty = r.top + r.height / 2; }
-    });
+    const tx = mouse ? mouse.x : x - 100, ty = mouse ? mouse.y : hy;
     const ang = Math.atan2(ty - hy, tx - x);
     const dist = Math.min(1, Math.hypot(tx - x, ty - hy) / (12 * P));
     look += (Math.cos(ang) * 2.5 * dist - look) * Math.min(1, dt * 8);
@@ -326,7 +329,8 @@ export function createSlime() {
     const stretch = 1 + Math.max(0, -pullY) / 15;
     const sx = (1 / Math.sqrt(sy * stretch)) * pop, syy = (sy * stretch) / pop;
     const W = 15 * sx, H = Math.round(21 * syy);       // fine pixels
-    const amb = (c: RGB, k: number) => mix(c, tint, k);
+    const flush = Math.min(0.55, angry * 0.4); // red in the face
+    const amb = (c: RGB, k: number) => mix(mix(c, tint, k), [235, 70, 60], flush);
     const tone = {
       line: hex(mix(amb(fm.outline, 0.15), [0, 0, 0], 0.15)), deep: hex(mix(amb(fm.shade, 0.18), fm.outline, 0.4)),
       shade: hex(amb(fm.shade, 0.18)), mid: hex(mix(amb(fm.shade, 0.15), amb(fm.body, 0.14), 0.5)),
@@ -360,6 +364,17 @@ export function createSlime() {
         const lit = -0.5 * nx - 0.6 * ny + 0.62 * nz;
         let c = lit > 0.7 ? tone.light : lit > 0.32 ? tone.body : lit > 0.02 ? tone.mid : lit > -0.3 ? tone.shade : tone.deep;
         if (v > 0.9) c = tone.deep;
+        if (fm.aviator) {
+          // leather cap over the top of the head, ear flaps down the sides, goggles on the cap, a scarf round the base
+          const leather = lit > 0.45 ? '#9a6638' : lit > 0.05 ? '#7a4c2a' : '#55331c';
+          const ax = Math.abs(px + 0.5) / xr;
+          const lensC = 0.42, inLens = Math.hypot((ax - lensC) * xr, (v - 0.19) * H * 0.9);
+          if (v < 0.3) c = Math.abs(px + 0.5) < 1 && i % 2 ? '#c9965a' : leather;
+          if (v >= 0.3 && v < 0.62 && ax > 0.82) c = leather;
+          if (inLens < 3) c = inLens < 1.9 ? (nx < 0 && ny < -0.3 ? '#e8f8ff' : '#8fd0f5') : '#c9913f';
+          else if (v > 0.13 && v < 0.26 && ax < 0.16) c = '#a87632';
+          if (v > 0.76 && v < 0.88) c = lit > 0.2 ? '#f4efe4' : '#d8cfbd';
+        }
         dot(X, y, c, A);
         if (px >= xr - 3 && px < xr - 1 && v > 0.25 && v < 0.85) dot(X, y, rim, px === xr - 2 ? 0.55 : 0.25);
       }
@@ -379,7 +394,12 @@ export function createSlime() {
     } else {
       for (const s of [-1, 1]) {
         const e0 = s * ex + lx - 1;                     // left edge of a 3-wide eye
-        if (happy > 0.5) {
+        if (angry > 0.3 && !(blink > 0 || drag)) {
+          dot(e0, ey, EYE, 1, 3, 4); dot(e0, ey, '#ffffff', 0.95, 1, 1);
+          // brows slanting down to the middle
+          if (s < 0) { dot(e0 - 1, ey - 3, EYE); dot(e0, ey - 2, EYE); dot(e0 + 1, ey - 2, EYE); dot(e0 + 2, ey - 1, EYE); }
+          else { dot(e0 + 3, ey - 3, EYE); dot(e0 + 2, ey - 2, EYE); dot(e0 + 1, ey - 2, EYE); dot(e0, ey - 1, EYE); }
+        } else if (happy > 0.5) {
           dot(e0, ey + 2, EYE); dot(e0 + 1, ey + 1, EYE); dot(e0 + 2, ey + 2, EYE);
         } else if (blink > 0 || drag) {
           dot(e0, ey + 2, EYE, 1, 3, 1);
@@ -391,13 +411,19 @@ export function createSlime() {
       const blush = 0.4 + happy * 0.4;
       dot(-ex - 3 + lx, ey + 4, '#ff8fa8', blush, 2, 1); dot(ex + 2 + lx, ey + 4, '#ff8fa8', blush, 2, 1);
       // mouth: a small "w", wide open when happy or in the air
-      if (happy > 0.5 || hop > 3) { dot(lx - 1, ey + 4, EYE, 1, 3, 1); dot(lx - 1, ey + 5, '#c0485e', 1, 3, 1); }
+      if (angry > 0.3) { dot(lx - 1, ey + 5, EYE, 1, 3, 1); dot(lx - 2, ey + 6, EYE); dot(lx + 2, ey + 6, EYE); }
+      else if (happy > 0.5 || hop > 3) { dot(lx - 1, ey + 4, EYE, 1, 3, 1); dot(lx - 1, ey + 5, '#c0485e', 1, 3, 1); }
       else { dot(lx - 1, ey + 4, EYE, 0.9); dot(lx, ey + 5, EYE, 0.9); dot(lx + 1, ey + 4, EYE, 0.9); }
     }
     // accessories, in design pixels, riding on top of her head
     const topDesign = Math.round((top * Q) / P);
     fm.extra?.((px, py, c, a) => put(px + Math.round((rows[0][0] * Q) / P), py, c, a), topDesign, t, sx * 0.85);
 
+    if (angry > 0.3) {
+      // the anger mark, throbbing above her head
+      const a = Math.min(1, angry * 2), ax = Math.round((W * Q) / P) - 1, ay = topDesign - 4 + Math.round(Math.sin(t * 12) * 0.5);
+      for (const [mx, my] of [[0, 0], [2, 0], [0, 2], [2, 2], [1, -1], [-1, 1], [3, 1], [1, 3]]) put(ax + mx, ay + my, '#ff4a4a', a);
+    }
     if (alert > 0) {
       const a = Math.min(1, alert * 3), ax = Math.round((W * Q) / P) + 1;
       put(ax, topDesign - 6, '#fff8ec', a); put(ax, topDesign - 5, '#fff8ec', a); put(ax, topDesign - 4, '#fff8ec', a); put(ax, topDesign - 2, '#fff8ec', a);
@@ -405,8 +431,10 @@ export function createSlime() {
     for (const s of sparks) {
       const px = Math.round(s.x), py = Math.round(s.y) - Math.round((H * Q) / P / 2);
       if (s.heart) {
-        put(px - 1, py, s.c, s.life); put(px + 1, py, s.c, s.life);
-        put(px - 1, py + 1, s.c, s.life); put(px, py + 1, s.c, s.life); put(px + 1, py + 1, s.c, s.life); put(px, py + 2, s.c, s.life);
+        // a four-point sparkle star
+        put(px, py, '#ffffff', s.life); put(px - 1, py, s.c, s.life); put(px + 1, py, s.c, s.life);
+        put(px, py - 1, s.c, s.life); put(px, py + 1, s.c, s.life);
+        if (Math.sin(s.life * 18) > 0) { put(px - 2, py, s.c, s.life * 0.6); put(px + 2, py, s.c, s.life * 0.6); put(px, py - 2, s.c, s.life * 0.6); put(px, py + 2, s.c, s.life * 0.6); }
       } else put(px, py, s.c, s.life);
     }
     g.globalAlpha = 1;
@@ -415,5 +443,24 @@ export function createSlime() {
   const home = () => ({ x, y: base() - 8 * P });
   /** Hop over to a screen x (null: go back to following the cursor). */
   const focus = (sx: number | null) => { goal = sx; if (sx !== null && hop === 0) hopV = 26; };
-  return { update, home, say, focus };
+  // a resting spot per page, on the right of the screen (clear of the text), alternating so each page change is a hop
+  const SPOTS = [0.8, 0.66, 0.88, 0.72, 0.84, 0.68, 0.9, 0.74, 0.86, 0.7, 0.88];
+  let page = -1;
+  /** A new page: hop over to its spot, and stay there. */
+  const toPage = (i: number) => {
+    if (i === page) return;
+    page = i;
+    goal = innerWidth * SPOTS[i % SPOTS.length];
+    if (hop === 0) hopV = 34;
+  };
+  /** Something booped her: get cross, hop up, and lunge at it. */
+  const annoy = (fromX: number) => {
+    angry = Math.min(1.2, angry + 0.7);
+    if (hop < 1) hopV = 42;
+    vy -= 5;
+    chase = Math.sign(fromX - x || 1) * 520;
+    burst(6, [255, 90, 80]);
+  };
+  const head = () => ({ x, y: bodyTop });
+  return { update, home, say, focus, toPage, annoy, head };
 }

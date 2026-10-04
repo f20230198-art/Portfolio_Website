@@ -25,31 +25,41 @@ html, body { margin: 0; background: #0b0a14; font-family: Karla, sans-serif; ove
 
 /* ---------- text: set straight on the painting, over a soft shade on the left ---------- */
 :root { --ink: #fff8ec; --dim: #dce4f2; --accent: #ffd27a; --line: rgba(255, 248, 236, .28); }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
 body::before { content: ''; position: fixed; inset: 0; z-index: 5; pointer-events: none;
   background: linear-gradient(90deg, rgba(8, 12, 30, .62) 0%, rgba(8, 12, 30, .38) 30%, rgba(8, 12, 30, 0) 55%); }
 #track { z-index: 10; pointer-events: none; }
-.place { position: absolute; left: clamp(20px, 7vw, 132px); width: min(36rem, calc(100vw - 40px)); color: var(--ink); pointer-events: auto; }
+.place { will-change: opacity, transform; }
+/* one page = one screen: its content centred in the space under the header bar */
+.place { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; box-sizing: border-box;
+  padding: 84px 0 48px clamp(20px, 7vw, 132px); color: var(--ink); pointer-events: none; scroll-snap-align: start; scroll-snap-stop: always; }
+.place > * { width: min(36rem, calc(100vw - 40px)); pointer-events: auto; }
 .place, .bar, .gauge { text-shadow: 0 2px 0 rgba(15, 8, 30, .55), 0 0 22px rgba(10, 6, 24, .6); }
 .block { display: grid; gap: 26px; }
 .label { display: grid; gap: 14px; }
 .eyebrow { margin: 0; display: flex; align-items: center; gap: 12px; font: 500 .8rem/1 'Pixelify Sans', monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
 .eyebrow::before { content: ''; width: 28px; height: 4px; background: var(--accent); box-shadow: 4px 4px 0 rgba(0, 0, 0, .35); }
 h1, h2 { font-family: 'Pixelify Sans', monospace; font-weight: 600; margin: 0; line-height: .98; letter-spacing: -.01em; }
-h1 { font-size: clamp(3.2rem, 7vw, 6rem); }
+h1 { font-size: clamp(2.8rem, min(6vw, 9vh), 5.4rem); }
 h2 { font-size: clamp(2.6rem, 5vw, 4.4rem); }
 .lead { margin: 0; max-width: 31rem; font-size: 1.15rem; line-height: 1.55; color: var(--dim); }
 .links { display: flex; flex-wrap: wrap; gap: 22px; }
 .links a, .go { font: 500 1rem 'Pixelify Sans', monospace; color: var(--ink); text-decoration: none; border-bottom: 3px solid var(--accent); padding-bottom: 2px; }
 .links a:hover, .go:hover { color: var(--accent); }
 .go.big { font-size: clamp(1.4rem, 2.6vw, 2rem); justify-self: start; }
+.hero { gap: clamp(10px, 2.2vh, 22px); }
+/* the way into the fall, at the bottom of the first page */
+.place > .fall { position: absolute; left: 50%; bottom: 26px; translate: -50% 0; width: auto; display: inline-flex; flex-direction: column; align-items: center; gap: 4px;
+  font: 500 .85rem 'Pixelify Sans', monospace; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); text-decoration: none; opacity: .85; transition: opacity .2s, color .2s; }
+.fall span { display: inline-block; font-size: 1.2rem; animation: bob 1.4s ease-in-out infinite; }
+.fall:hover { opacity: 1; color: var(--accent); }
 .cue { margin: 18px 0 0; font: 500 .85rem 'Pixelify Sans', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
 .cue span { display: inline-block; margin-left: 8px; animation: bob 1.6s ease-in-out infinite; }
 @keyframes bob { 50% { transform: translateY(6px); } }
 
 /* hero facts: little pixel plaques */
 .chips { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-width: 31rem; }
-.chips li { display: grid; gap: 2px; padding: 10px 12px; background: rgba(20, 12, 40, .55); box-shadow: 0 0 0 2px var(--line), 4px 4px 0 2px rgba(0, 0, 0, .3); text-shadow: none; }
+.chips li { gap: 2px; padding: 10px 12px; }
 .chips b { font: 600 1.25rem/1.1 'Pixelify Sans', monospace; color: var(--accent); }
 .chips span { font-size: .85rem; line-height: 1.3; color: var(--dim); }
 .now { margin: 0; display: flex; align-items: center; gap: 10px; font: 500 .9rem/1.4 'Pixelify Sans', monospace; color: var(--ink); }
@@ -58,17 +68,29 @@ h2 { font-size: clamp(2.6rem, 5vw, 4.4rem); }
 .tags { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .tags li { font: 500 .8rem/1 'Pixelify Sans', monospace; padding: 6px 9px; color: var(--ink); background: rgba(20, 12, 40, .5); box-shadow: 0 0 0 2px var(--line); text-shadow: none; }
 
+/* the smaller projects, as a compact list */
+.shelf ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.shelf a { gap: 4px; padding: 12px 14px; height: 100%; box-sizing: border-box; align-content: start; }
+.shelf b { font: 600 1.15rem/1.2 'Pixelify Sans', monospace; }
+.shelf span { font-size: .85rem; line-height: 1.35; color: var(--dim); }
+@media (max-width: 700px) { .shelf ul { grid-template-columns: 1fr; } }
+
 /* the project list: numbered rows on hairlines, each a door to the project's page */
-.doors { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--line); }
-.doors li { border-bottom: 2px solid var(--line); }
-.doors a, .doors.plain div { position: relative; display: grid; grid-template-columns: 2.6rem 1fr; column-gap: 4px; padding: 16px 44px 16px 0; color: var(--ink); text-decoration: none; transition: padding .25s ease, color .25s ease; }
-.doors i { grid-row: span 2; font: 500 .85rem/2.2 'Pixelify Sans', monospace; font-style: normal; color: var(--accent); }
-.doors b { font: 600 clamp(1.35rem, 2.2vw, 1.8rem)/1.15 'Pixelify Sans', monospace; }
+.doors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+/* a card: a plain dark panel with a thin edge; on hover the edge warms a little */
+.chips li, .doors a, .doors.plain div, .shelf a {
+  position: relative; display: grid; color: var(--ink); text-decoration: none; text-shadow: none;
+  background: rgba(14, 14, 34, .62); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+  transition: box-shadow .2s ease, background .2s ease; }
+.doors a:hover, .shelf a:hover { background: rgba(18, 18, 42, .74); box-shadow: inset 0 0 0 1px rgba(255, 210, 122, .5); }
+.doors a { grid-template-columns: 2.4rem 1fr; column-gap: 6px; row-gap: 4px; padding: 16px 48px 16px 14px; }
+.doors.plain div { grid-template-columns: 1fr; gap: 4px; padding: 14px 16px; }
+.doors i { grid-row: span 3; font: 500 .85rem/2 'Pixelify Sans', monospace; font-style: normal; color: var(--accent); }
+.doors b { font: 600 clamp(1.3rem, 2vw, 1.65rem)/1.15 'Pixelify Sans', monospace; }
 .doors span { font-size: .9rem; color: var(--dim); }
-.doors.plain div { grid-template-columns: 1fr; padding-right: 0; }
-.doors a::after { content: '→'; position: absolute; right: 6px; top: 50%; translate: 0 -50%; font: 600 1.5rem 'Pixelify Sans', monospace; color: var(--accent); transition: right .25s ease; }
-.doors a:hover { padding-left: 12px; color: var(--accent); }
-.doors a:hover::after { right: 0; }
+.doors .result { font: 500 .9rem/1.35 'Pixelify Sans', monospace; color: var(--accent); }
+.doors a::after { content: '\2192'; position: absolute; right: 16px; top: 50%; translate: 0 -50%; font: 600 1.4rem 'Pixelify Sans', monospace; color: var(--accent); transition: right .25s ease; }
+.doors a:hover::after { right: 10px; }
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
 .reveal.in { opacity: 1; transform: none; }
 
@@ -82,18 +104,18 @@ h2 { font-size: clamp(2.6rem, 5vw, 4.4rem); }
 .bar nav a:hover, .bar nav a.on { opacity: 1; border-color: var(--accent); }
 @media (max-width: 900px) { .bar nav { display: none; } }
 
-/* depth gauge on the right edge */
+/* page gauge on the right edge: a tick per page, magnified around the current page (or the cursor) like a dock */
 .gauge { position: fixed; right: clamp(14px, 2.4vw, 36px); top: 50%; translate: 0 -50%; z-index: 25; font-family: 'Pixelify Sans', monospace; color: var(--ink); }
-.gauge ol { list-style: none; margin: 0; padding: 0 12px 0 0; display: grid; gap: 22px; border-right: 2px solid var(--line); }
-.gauge li { text-align: right; }
-.gauge a { display: flex; align-items: center; justify-content: flex-end; gap: 10px; color: inherit; text-decoration: none; font-size: .8rem; }
-.gauge a::after { content: ''; width: 8px; height: 8px; background: var(--line); margin-right: -17px; transition: background .3s, transform .3s; }
-.gauge span { opacity: 0; transform: translateX(6px); transition: opacity .3s, transform .3s; }
-.gauge li.on span, .gauge:hover span { opacity: 1; transform: none; }
-.gauge li.on a::after { background: var(--accent); transform: scale(1.5); }
+.gauge ol { list-style: none; margin: 0; padding: 0 12px 0 0; display: grid; border-right: 2px solid var(--line); }
+.gauge li { --s: 1; text-align: right; padding: 6px 0; transform: scale(var(--s)); transform-origin: 100% 50%; will-change: transform; }
+.gauge a { display: flex; align-items: center; justify-content: flex-end; gap: 8px; color: inherit; text-decoration: none; font-size: .68rem; }
+.gauge a::after { content: ''; flex: none; width: 6px; height: 6px; margin-right: -16px; background: var(--line); transition: background .2s; }
+.gauge span { white-space: nowrap; opacity: calc((var(--s) - 1.12) * 4); }
+.gauge li.on a::after { background: var(--accent); }
+.gauge li.on span { color: var(--accent); }
 .gauge .depth { margin: 14px 0 0; text-align: right; font-size: .8rem; color: var(--accent); }
 @media (max-width: 700px) { .gauge { display: none; } }
-@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: reduce) { .fall, .fall span { animation: none; } .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
 
 /* the slime's speech bubble */
 .bubble { position: fixed; left: 0; top: 0; z-index: 31; max-width: 15rem; padding: 10px 14px; background: #fff8ec; color: #241a3a; font: 500 .95rem/1.35 'Pixelify Sans', monospace; pointer-events: none;
@@ -116,13 +138,30 @@ h2 { font-size: clamp(2.6rem, 5vw, 4.4rem); }
 /* ---------- phones ---------- */
 @media (max-width: 700px) {
   body::before { background: linear-gradient(rgba(8, 12, 30, .25), rgba(8, 12, 30, .45)); }
-  .place { left: 20px; width: calc(100vw - 40px); }
-  .hero { padding-top: 84px; }
+  .place { padding: 64px 18px 92px; }
+  .hero { gap: 12px; }
+  .hero .lead { font-size: .95rem; line-height: 1.45; }
+  .chips { gap: 8px; }
+  .chips li { padding: 8px 10px; }
+  .now { font-size: .8rem; }
+  .place > .fall { bottom: 18px; }
+  .block { gap: 14px; }
+  .doors { gap: 8px; }
+  .doors a { grid-template-columns: 1.8rem 1fr; }
+  .doors span { font-size: .82rem; }
+  .doors .result { font-size: .82rem; }
+  .shelf ul { gap: 6px; }
+  .shelf a { padding: 9px 12px; }
+  .shelf b { font-size: 1rem; }
+  .shelf span { font-size: .78rem; }
+  .doors.plain div { padding: 10px 12px; }
+  .doors .line { font-size: .82rem; }
+  .place > * { width: 100%; }
   .block { gap: 18px; }
   h1 { font-size: clamp(2.6rem, 13vw, 3.4rem); }
   h2 { font-size: clamp(2.1rem, 10vw, 2.8rem); }
   .lead { font-size: 1rem; }
-  .doors a { padding: 13px 36px 13px 0; }
+  .doors a { padding: 12px 40px 12px 12px; }
   .doors b { font-size: 1.2rem; }
   .bar { padding: 14px 18px; }
   .bar .mark { font-size: 1rem; }
@@ -130,4 +169,13 @@ h2 { font-size: clamp(2.6rem, 5vw, 4.4rem); }
   .ending h2 { font-size: 2rem; }
   .chips b { font-size: 1.05rem; }
   .chips span { font-size: .78rem; }
+}
+
+/* short phones: keep the first page to one screen */
+@media (max-width: 700px) and (max-height: 760px) {
+  .hero h1 { font-size: 2.3rem; }
+  .hero .eyebrow { font-size: .68rem; }
+  .now { display: none; }
+  .chips span { font-size: .72rem; }
+  .chips b { font-size: .95rem; }
 }

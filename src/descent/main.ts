@@ -14,7 +14,9 @@
  */
 
 import { createSlime } from './slime';
-import { blocks, revealOnScroll, onZone, chrome } from './text';
+import { createWisps } from './wisp';
+import { pages, revealOnScroll, onZone, onPage, chrome } from './text';
+import { mountDemos, peeks } from './demos';
 
 const SRC_W = 1880;       // scene image size (px)
 const SRC_H = 3344;
@@ -25,9 +27,6 @@ const GH = Math.round(SRC_H / CELL);
 const K = GW / 940;       // design px → grid px
 const PHONE = () => innerWidth < 700;
 const ZOOM = () => (PHONE() ? 1 : 1.2); // the art is shown this much wider than the window (the edges crop off)
-// on phones a scene is shorter than the screen, so the page scrolls this much faster than the painting
-// (the text runs ahead of the art, which also spreads the text out)
-const PACE = () => (PHONE() ? 2.2 : 1);
 // phones (and small screens) get the half-size paintings
 const LITE = Math.min(innerWidth, innerHeight) * Math.min(2, devicePixelRatio || 1) < 1100 ? '-m' : '';
 const FG_PARALLAX = 0.18; // foregrounds move this much faster than their scene
@@ -143,7 +142,7 @@ const ALL_SCENES: SceneDef[] = [
 ];
 
 const SCENES = ALL_SCENES;
-const START = 200; // skip the starry strip, so it opens on the tree
+const START = 650; // open low enough that the tree and the cliff are in view, not just sky
 
 /* ---------- helpers ---------- */
 function hash(x: number, y: number, s = 0) {
@@ -248,38 +247,59 @@ async function loadScene(i: number): Promise<Scene> {
   return { def, top: TOPS[i], grid, fx, dom };
 }
 const WORLD_H = TOPS[TOPS.length - 1] + SRC_H;
+// the fall ends at the campfire in the cavern (source row 1920 of the last scene), with it a little below the middle of the screen
+const FIRE_Y = TOPS[TOPS.length - 1] + 1920;
+// a short veil of painted clouds pinned over the valley/pond seam
+const BAND = 650, VEIL = 250; // cloud band height; the fully clouded strip at the seam
+const WALL_TOP = TOPS[2] + OVERLAPS[2] / 2 - VEIL / 2 - BAND / 2;
+const WALL_H = BAND + VEIL;
+const camMax = () => Math.min(WORLD_H - vh, FIRE_Y - Math.round(vh * 0.62));
 
-let scale = 1, vh = 200, left = 0, pace = 1;
+let scale = 1, vh = 200, left = 0;
 function sizeScene(d: Layers) {
   for (const im of [d.bg, d.fg]) im.style.width = `${SRC_W * scale}px`;
   for (const c of [d.bgfx, d.fgfx]) { c.width = HW; c.height = Math.ceil(vh / 2); c.style.width = `${SRC_W * scale}px`; c.style.height = `${(c.height * 2) * scale}px`; }
 }
 /**
- * Put each text block where its scene is, but never on top of the one before it:
- * a block that would collide is pushed down, and the page's scroll length (and so
- * how fast the painting moves per scroll) stretches to fit everything.
+ * Where the camera rests on each page. Pages never rest inside the cloud wall:
+ * pages above it stay clear above, pages below it start clear below; and the
+ * camera only ever moves down from one page to the next.
  */
+let cams: number[] = [];
+function pageCams() {
+  cams = pages.map((p) => (p.at === 'start' ? START : p.at === 'end' ? camMax() : TOPS[p.scene] + p.at));
+  cams = cams.map((c, i) => {
+    const sc = pages[i].scene;
+    if (pages[i].at === 'start' || pages[i].at === 'end') return c;
+    const lo = TOPS[sc] + OVERLAPS[sc], hi = (sc + 1 < TOPS.length ? TOPS[sc + 1] : WORLD_H) - vh;
+    if (lo > hi) return c;
+    // pages sharing a scene are spread evenly over its clear part, from the first one's spot down
+    const mine = pages.map((_, j) => j).filter((j) => pages[j].scene === sc && typeof pages[j].at === 'number');
+    const k = mine.indexOf(i), from = Math.max(lo, Math.min(hi, TOPS[sc] + (pages[mine[0]].at as number)));
+    return mine.length > 1 ? from + ((hi - from) * k) / (mine.length - 1) : Math.max(lo, Math.min(hi, c));
+  });
+  const above = WALL_TOP - vh - 40, below = WALL_TOP + WALL_H + 40;
+  cams = cams.map((c, i) => (pages[i].scene < 2 ? (above > cams[0] ? Math.min(c, above) : c) : Math.max(c, below)));
+  for (let i = 1; i < cams.length; i++) cams[i] = Math.min(camMax(), Math.max(cams[i], cams[i - 1] + 1));
+}
+/** The camera for a scroll position: glide from one page's resting spot to the next. */
+function camAt(y: number) {
+  const f = Math.max(0, Math.min(cams.length - 1, y / pageH)), i = Math.min(cams.length - 2, Math.floor(f)), t = f - i;
+  return cams[i] + (cams[i + 1] - cams[i]) * t;
+}
 function layoutText() {
-  const range = (WORLD_H - START - vh) * scale; // world scroll in css px at pace 1
-  const els = [...track.querySelectorAll<HTMLElement>('.place')];
-  const gap = innerHeight * 0.3;
-  pace = PACE();
-  for (let pass = 0; pass < 3; pass++) {
-    let bottom = -Infinity;
-    for (const el of els) {
-      const top = Math.max((+el.dataset.wy! - START) * scale * pace, bottom + gap);
-      el.style.top = `${top}px`;
-      bottom = top + el.offsetHeight;
-    }
-    const need = bottom + innerHeight * 0.15 - innerHeight; // scroll needed to show the last block
-    const next = Math.max(PACE(), need / range);
-    if (Math.abs(next - pace) < 0.01) break;
-    pace = next;
-  }
-  track.style.height = `${range * pace + innerHeight}px`;
+  pageCams();
+  track.style.height = `${pages.length * pageH}px`;
+  places.forEach((el, i) => { el.style.top = `${i * pageH}px`; el.style.height = `${pageH}px`; });
+  fadePlaces();
 }
 
+// the height of one page. On phones the browser bar showing and hiding changes the window height a little
+// while scrolling; that must not re-cut the pages mid-scroll, so only a real change (rotation, a new size) does.
+let pageH = innerHeight, lastW = innerWidth;
 function resize() {
+  if (!(PHONE() && innerWidth === lastW && Math.abs(innerHeight - pageH) < 160)) pageH = innerHeight;
+  lastW = innerWidth;
   scale = (innerWidth / SRC_W) * ZOOM(); // css px per source px
   vh = Math.ceil(innerHeight / scale);                          // viewport height in source px
   left = Math.round((innerWidth - SRC_W * scale) / 2);
@@ -288,23 +308,38 @@ function resize() {
   layoutText();
   for (const s of scenes) if (s) sizeScene(s.dom);
 }
-for (const b of blocks(START, SRC_H)) {
+for (const p of pages) {
   const el = document.createElement('div');
   el.className = 'place';
-  el.innerHTML = b.html;
-  el.dataset.wy = String(TOPS[b.scene] + b.at);
+  el.innerHTML = p.html;
   track.appendChild(el);
 }
 revealOnScroll(track);
 chrome();
-// re-place the text whenever a block changes size (fonts loading, a line wrapping)
-const ro = new ResizeObserver(() => layoutText());
-track.querySelectorAll('.place').forEach((el) => ro.observe(el));
+// every block eases in as it enters the screen and out as it leaves
+const places = [...track.querySelectorAll<HTMLElement>('.place')];
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fadePlaces() {
+  const H = innerHeight, edge = H * 0.18;
+  for (const el of places) {
+    const r = el.getBoundingClientRect();
+    if (r.bottom < -50 || r.top > H + 50) { el.style.opacity = '0'; continue; }
+    const k = Math.max(0, Math.min(1, (r.bottom - H * 0.06) / edge, (H * 0.94 - r.top) / edge));
+    const e = k * k * (3 - 2 * k);
+    el.style.opacity = String(e);
+    el.style.transform = still ? '' : `translate3d(0, ${(1 - e) * (r.top > H / 2 ? 28 : -28)}px, 0)`;
+  }
+}
+addEventListener('scroll', fadePlaces, { passive: true });
+addEventListener('resize', fadePlaces);
+mountDemos(track);
+peeks(track);
 
 // lazy: the first scene loads before anything is shown, the rest stream in behind it, in order
 const scenes: (Scene | undefined)[] = SCENES.map(() => undefined);
 addEventListener('resize', resize);
 resize();
+fadePlaces();
 scenes[0] = await loadScene(0);
 const loader = document.getElementById('loader')!;
 loader.classList.add('done');
@@ -445,9 +480,6 @@ function drawParticles(s: Scene, oy: number, t: number) {
 
 /* ---------- the cloud passage between the valley and the pond ---------- */
 // a short veil of painted clouds pinned over the seam, so the valley sinks into the pond through cloud
-const BAND = 650, VEIL = 250; // cloud band height; the fully clouded strip at the seam
-const WALL_TOP = TOPS[2] + OVERLAPS[2] / 2 - VEIL / 2 - BAND / 2;
-const WALL_H = BAND + VEIL;
 function sizeClouds() {
   const c = document.getElementById('clouds')!;
   c.style.height = `${WALL_H * scale}px`;
@@ -458,13 +490,15 @@ sizeClouds();
 addEventListener('resize', sizeClouds);
 const clouds = document.getElementById('clouds') as HTMLDivElement;
 
-let cam = Math.min(WORLD_H - vh, START + scrollY / (scale * pace)), frameCount = 0;
+let cam = camAt(scrollY), frameCount = 0;
 const t0 = performance.now();
 const slime = createSlime();
+const wisp = createWisps((x) => slime.annoy(x));
+let pageShown = -1;
 let shownZone = -1, restingByFire = false;
 let lastNow = t0, lastCam = cam, ambient: [number, number, number] | null = null;
 function frame(now: number) {
-  const target = Math.min(WORLD_H - vh, START + Math.max(0, scrollY / (scale * pace)));
+  const target = camAt(scrollY);
   cam += (target - cam) * 0.16;
   if (Math.abs(target - cam) < 0.02) cam = target;
   const c = Math.round(cam), t = (now - t0) / 1000;
@@ -514,10 +548,13 @@ function frame(now: number) {
     }
     if (n) ambient = [r / n, g / n, b / n];
   }
-  slime.update({ t, dt, vel: (cam - lastCam) * scale * pace, zone, ambient });
+  const pg = Math.round(scrollY / pageH);
+  if (pg !== pageShown) { if (pageShown >= 0) wisp.swoop(); pageShown = pg; slime.toPage(pg); onPage(pg); }
+  wisp.update(t, dt, slime.head());
+  slime.update({ t, dt, vel: (cam - lastCam) * scale, zone, ambient });
   if (zone !== shownZone) { shownZone = zone; onZone(zone); }
   // at the very end, she goes and sits by the campfire
-  const atEnd = cam >= WORLD_H - vh - 40;
+  const atEnd = cam >= camMax() - 40;
   if (atEnd !== restingByFire) { restingByFire = atEnd; slime.focus(atEnd ? left + 385 * 2 * scale : null); }
   lastNow = now; lastCam = cam;
 

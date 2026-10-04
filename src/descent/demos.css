@@ -1,0 +1,47 @@
+/* ---------- the interactive demo (project pages, the home page and hover previews) ---------- */
+.demo { display: grid; gap: 12px; margin-top: 10px; padding: 16px; background: rgba(14, 9, 30, .82); box-shadow: 0 0 0 3px #241a3a, 0 0 0 5px var(--line), 8px 8px 0 5px rgba(0, 0, 0, .3); text-shadow: none; }
+.demo-head { display: grid; gap: 6px; }
+.demo .hint { font-size: .95rem; line-height: 1.5; color: var(--dim); }
+.demo canvas { width: 100%; height: auto; display: block; image-rendering: pixelated; touch-action: manipulation; }
+.demo .note { font-size: .78rem; color: #8f82ad; }
+.demo-ui { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.px-btn { font: 500 .95rem 'Pixelify Sans', monospace; color: #241a3a; background: var(--accent); border: 0; padding: 8px 14px; cursor: pointer; user-select: none;
+  box-shadow: 0 0 0 3px #241a3a, 4px 4px 0 3px rgba(0, 0, 0, .35); transition: translate .1s ease, box-shadow .1s ease; }
+.px-btn:hover { translate: -1px -1px; }
+.px-btn:active, .px-btn.on { translate: 2px 2px; box-shadow: 0 0 0 3px #241a3a, 1px 1px 0 3px rgba(0, 0, 0, .35); background: #ff9f7a; }
+.px-btn:focus-visible, .px-slider input:focus-visible, .scan-form input:focus-visible { outline: 3px solid #7fe0a8; outline-offset: 3px; }
+.px-slider { display: grid; gap: 6px; flex: 1 1 14rem; font: 500 .85rem 'Pixelify Sans', monospace; color: var(--ink); }
+.px-slider input { width: 100%; accent-color: var(--accent); }
+.demo-msg { flex-basis: 100%; font: 500 .9rem/1.4 'Pixelify Sans', monospace; color: var(--ink); }
+.demo-log { flex-basis: 100%; list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font: .85rem 'Pixelify Sans', monospace; color: var(--dim); }
+.demo-log li:first-child { color: var(--ink); }
+.demo-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; min-height: 9.5rem; align-content: start; }
+.demo-feed li { padding: 8px 10px; background: #1e1438; font: .85rem/1.4 ui-monospace, Consolas, monospace; color: var(--dim); animation: slidein .4s ease; }
+.demo-feed .tac { display: block; margin-bottom: 2px; font: 500 .75rem 'Pixelify Sans', monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.demo-feed mark { background: rgba(255, 107, 107, .25); color: #ffb3b3; padding: 0 2px; }
+@keyframes slidein { from { opacity: 0; transform: translateY(-6px); } }
+.scan-form { display: flex; gap: 12px; flex: 1; }
+.scan-form input { flex: 1; min-width: 0; font: .95rem ui-monospace, Consolas, monospace; color: var(--ink); background: #1e1438; border: 0; box-shadow: 0 0 0 2px var(--line); padding: 8px 10px; }
+.scan-out { display: grid; gap: 10px; }
+.scan-score { display: flex; align-items: baseline; gap: 10px; font-family: 'Pixelify Sans', monospace; color: var(--dim); }
+.scan-score b { font-size: 2.6rem; line-height: 1; color: var(--ink); }
+.scan-score b.good { color: #7fe0a8; } .scan-score b.meh { color: var(--accent); } .scan-score b.poor { color: #ff6b6b; }
+.scan-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .9rem; }
+.scan-list li { display: grid; grid-template-columns: 12px 1fr auto; align-items: center; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--line); animation: slidein .3s ease; }
+.scan-list i { width: 10px; height: 10px; background: var(--dim); }
+.scan-list i.run { animation: blink .5s steps(2) infinite; }
+.scan-list i.ok { background: #7fe0a8; } .scan-list i.bad { background: #ff6b6b; }
+.scan-list em { font: normal .85rem 'Pixelify Sans', monospace; color: var(--dim); }
+@keyframes blink { 50% { opacity: .2; } }
+@media (max-width: 700px) { .demo { padding: 12px; } .demo .hint { font-size: .88rem; } }
+
+.demo .meta { margin: 0; font: 500 .8rem/1.4 'Pixelify Sans', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.demo p { margin: 0; }
+
+/* a live preview beside a project row, on hover */
+.peek { position: fixed; z-index: 30; width: 340px; pointer-events: none; opacity: 0; transform: translateX(-8px); transition: opacity .2s ease, transform .2s ease; }
+.peek.show { opacity: 1; transform: none; }
+.peek .demo { padding: 10px; gap: 8px; }
+.peek .demo-head .hint, .peek .note, .peek .demo-ui, .peek .demo-feed, .peek .scan-form { display: none; }
+.peek .scan-list { font-size: .8rem; }
+.peek .scan-score b { font-size: 1.8rem; }
