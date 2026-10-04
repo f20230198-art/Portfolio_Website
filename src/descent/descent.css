@@ -1,4 +1,4 @@
-html, body { margin: 0; background: #0b0a14; font-family: Karla, sans-serif; }
+html, body { margin: 0; background: #0b0a14; font-family: Karla, sans-serif; overflow-x: clip; }
 #world { position: fixed; top: 0; height: 100vh; overflow: hidden; }
 #world .scene { position: absolute; inset: 0; }
 #world .plate { position: absolute; top: 0; left: 0; will-change: transform; }

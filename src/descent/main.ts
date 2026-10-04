@@ -284,7 +284,7 @@ function resize() {
   vh = Math.ceil(innerHeight / scale);                          // viewport height in source px
   left = Math.round((innerWidth - SRC_W * scale) / 2);
   world.style.left = `${left}px`; world.style.width = `${SRC_W * scale}px`;
-  track.style.width = `${innerWidth}px`;
+  track.style.width = "100%";
   layoutText();
   for (const s of scenes) if (s) sizeScene(s.dom);
 }
