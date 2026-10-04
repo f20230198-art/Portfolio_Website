@@ -5,3 +5,10 @@ dist/
 .env.*
 !.env.example
 .vercel/
+
+# art sources (huge) and archived old code
+scenes-src/
+scenes-src-upscaled/
+all-scenes-full-resolution.zip
+_archive/
+src/journey/

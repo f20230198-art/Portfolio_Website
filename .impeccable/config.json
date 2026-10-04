@@ -8,6 +8,33 @@
         "value": "arial",
         "createdAt": "2026-09-21T14:30:21.886Z",
         "reason": "Claude: sole use is .name-star, the decorative asterisk glyph; system font chosen for consistent cross-platform symbol rendering, not as a UI typeface. Real stack is Syne/DM Sans/IBM Plex Mono."
+      },
+      {
+        "rule": "organic-clip-path",
+        "value": "*",
+        "files": [
+          "project.html"
+        ],
+        "createdAt": "2026-10-04T18:36:47.610Z",
+        "reason": "Claude triage: the clip-paths in descent.css are 12-point stepped pixel corners on rectangular panels (cut-corner geometry), not organic contours"
+      },
+      {
+        "rule": "radial-halo",
+        "value": "*",
+        "files": [
+          "project.html"
+        ],
+        "createdAt": "2026-10-04T18:54:05.318Z",
+        "reason": "Claude triage: the radial-gradient in shared descent.css is the light cast by in-world light sources (lanterns, glowing lotuses, crystals), not a decorative page background; it is not used on the project page itself"
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-04T19:36:33.176Z",
+        "reason": "Claude: the painted cloud band drifting slowly is ambient scenery in the pixel world (existing design the user kept), not scrolling content"
       }
     ]
   }
