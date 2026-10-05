@@ -8,6 +8,7 @@ html, body { margin: 0; background: #0b0a14; font-family: Karla, sans-serif; ove
 /* the loading screen, until the first painting is ready */
 .loader { position: fixed; inset: 0; z-index: 60; display: grid; place-content: center; justify-items: center; gap: 16px; background: #0b0a14; color: #fff8ec; font-family: 'Pixelify Sans', monospace; transition: opacity .8s ease; }
 .loader p { margin: 0; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 600; }
+.loader small { margin-top: -8px; font-size: .8rem; letter-spacing: .06em; color: #fff8ec; opacity: .75; text-align: center; padding: 0 16px; }
 .loader span { font-size: .85rem; letter-spacing: .14em; text-transform: uppercase; color: #ffd27a; }
 .loader .bar-track { width: 180px; height: 8px; background: #241a3a; box-shadow: 0 0 0 3px #241a3a; overflow: hidden; }
 .loader .bar-track i { display: block; width: 40%; height: 100%; background: #ffd27a; animation: load 1.1s steps(10) infinite; }
